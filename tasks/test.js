@@ -1,8 +1,9 @@
-export default (gulp, config) => {
-  gulp.task('test', (callback) => {
+export default (gulp, cfg) => {
+  gulp.task('test', async () => {
     // console.log(process.argv)
-    console.log(config.path.tasks('test.js'))
-    
-    callback()
+
+    console.log(cfg.styles.src)
+
+    console.log(cfg.dest())
   })
 }
