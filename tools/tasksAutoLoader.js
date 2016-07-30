@@ -1,10 +1,7 @@
-/**
- * Tasks Auto Loader into Gulp
- * @param  {Object} gulp    Gulp
- * @param  {String} ...task Task of needing registered
- * @return {Function}       Task
- */
-export default (gulp, ...task) =>
-  task.forEach(
-    tsk => require(`../tasks/${tsk}`).default(gulp)
-  )
+import fs from 'fs'
+import gulp from 'gulp'
+
+// Get gulp tasks's path synchronously
+const tasks = fs.readdirSync('./tasks')
+
+export default tasks.forEach(task => require(`../tasks/${task}`).default(gulp))

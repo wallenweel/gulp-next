@@ -1,6 +1,6 @@
 export default (gulp) => {
   gulp.task('test', (callback) => {
-    console.log('test')
+    console.log(process.argv)
     callback()
   })
 }
