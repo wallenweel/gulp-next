@@ -35,11 +35,19 @@ export default class DefaultConfig {
   }
 
   tasks = {
-    entry: [
-      'test',
+    get entry() {
+      const r = []
+      r.push(...this.contents, ...this.tools)
+      return r
+    },
+    contents: [
       'templates',
       'scripts',
       'styles',
+      // 'images',
+    ],
+    tools: [
+      'test',
       'clean',
       'build',
       'watch',
@@ -205,7 +213,7 @@ export default class DefaultConfig {
   }
 
   watch = {
-    listen: ['styles', 'templates', 'scripts'],
+    listen: this.tasks.contents,
   }
 
   server = {

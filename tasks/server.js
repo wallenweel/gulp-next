@@ -5,8 +5,6 @@ export default (gulp, c) => {
     await browserSync(c.bs)
 
   gulp.task('server',
-    gulp.series(server,
-      'watch'
-    )
+    gulp.series(server, 'watch')
   )
 }

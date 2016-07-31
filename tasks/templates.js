@@ -11,6 +11,7 @@ export default (gulp, c) => {
       .pipe(pug(c.pug))
       .pipe(pugFilter.restore)
       .pipe(htmlFilter)
+      .pipe(gulp.changed(c.dest))
       .pipe(gulp.dest(c.dest))
   }
 
