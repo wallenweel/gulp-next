@@ -34,6 +34,17 @@ export default class DefaultConfig {
     get templates() { return `${this.src}/templates` },
   }
 
+  tasks = {
+    entry: [
+      'test',
+      'templates',
+      'scripts',
+      'styles',
+      'clean',
+      'build',
+    ],
+  }
+
   /**
    * Generate Absolute Paths
    * @return {Object}   Path get approach collection
