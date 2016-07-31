@@ -5,7 +5,7 @@ export default class CustomConfig extends DefaultConfig {
   constructor() {
     super()
 
-    this.update('server', { bs: { ui: false, open: false } })
+    this.mend(this.server.bs)({ port: 3030, ui: false, open: false })
   }
 
 }

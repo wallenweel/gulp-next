@@ -78,29 +78,25 @@ export default class DefaultConfig {
   }
 
   /**
-   * Settings Options Updater
-   * @param  {String} optName Option's name
-   * @param  {Object} props   Need to update
-   * @return {Object}         Updated Option
+   * Mending Default Configuration
+   * @param  {String || Object} type Need to be mended
+   * @return {Function}      Param "props" is updating options
    */
-  update(optName, props) {
-    return this.updater(this[optName], props)
-  }
-
-  /**
-   * Object Properties Updater
-   * @param  {Object} obj    Want to be updated
-   * @param  {Object} props  Need to update
-   * @return {Object}        Updated Option
-   */
-  updater(option, props) {
-    Object.keys(props).forEach(k =>
-      !this.type(props[k], 'object') ?
-      (option[k] = props[k]) :
-      this.updater(option[k], props[k])
-    )
-
-    return option
+  mend(type) {
+    const aim = this.type(type, 'object') ? type : this[type]
+    
+    /**
+     * Updating options
+     * @param  {Object} props New options
+     * @return Assignment or Recursion
+     */
+    return (props) => {
+      Object.keys(props).forEach(k =>
+        !this.type(props[k], 'object') ?
+        (aim[k] = props[k]) :
+        this.mend(aim[k])(props[k])
+      )
+    }
   }
 
   /**
