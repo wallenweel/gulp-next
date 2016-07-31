@@ -42,6 +42,7 @@ export default class DefaultConfig {
       'styles',
       'clean',
       'build',
+      'watch',
       'server',
     ],
   }
@@ -84,7 +85,7 @@ export default class DefaultConfig {
    */
   mend(type) {
     const aim = this.type(type, 'object') ? type : this[type]
-    
+
     /**
      * Updating options
      * @param  {Object} props New options
@@ -203,6 +204,10 @@ export default class DefaultConfig {
     },
   }
 
+  watch = {
+    listen: ['styles', 'templates', 'scripts'],
+  }
+
   server = {
     /** More options see: www.browsersync.io/docs/options */
     bs: {
@@ -212,9 +217,9 @@ export default class DefaultConfig {
         baseDir: this.dest(),
         index: 'index.html',
       },
+      files: this.dest('**/*'),
       open: true,
       notify: true,
-      quiet: false,
 
       // "info", "debug", "warn", or "silent"
       logLevel: 'debug',
