@@ -1,9 +1,7 @@
 import filter from 'gulp-filter'
 import pug from 'gulp-pug'
 
-export default (gulp, cfg) => {
-  const c = cfg.templates
-
+export default (gulp, c) => {
   const pugFilter = filter('**/*.pug', { restore: true })
   const htmlFilter = filter('**/*.html')
 

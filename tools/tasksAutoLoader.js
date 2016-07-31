@@ -8,5 +8,5 @@ import { config } from '../config'
 const tasks = config.tasks.entry
 
 export default tasks.forEach(async task =>
-  await require(config.path.tasks(task)).default(gulp, config)
+  await require(config.path.tasks(task)).default(gulp, config[task], config)
 )
