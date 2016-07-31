@@ -34,6 +34,27 @@ export default class DefaultConfig {
     get templates() { return `${this.src}/templates` },
   }
 
+  tasks = {
+    get entry() {
+      const r = []
+      r.push(...this.contents, ...this.tools)
+      return r
+    },
+    contents: [
+      'templates',
+      'scripts',
+      'styles',
+      // 'images',
+    ],
+    tools: [
+      'test',
+      'clean',
+      'build',
+      'watch',
+      'server',
+    ],
+  }
+
   /**
    * Generate Absolute Paths
    * @return {Object}   Path get approach collection
@@ -63,6 +84,28 @@ export default class DefaultConfig {
     if (!type) return r
 
     return r === type
+  }
+
+  /**
+   * Mending Default Configuration
+   * @param  {String || Object} type Need to be mended
+   * @return {Function}      Param "props" is updating options
+   */
+  mend(type) {
+    const aim = this.type(type, 'object') ? type : this[type]
+
+    /**
+     * Updating options
+     * @param  {Object} props New options
+     * @return Assignment or Recursion
+     */
+    return (props) => {
+      Object.keys(props).forEach(k =>
+        !this.type(props[k], 'object') ?
+        (aim[k] = props[k]) :
+        this.mend(aim[k])(props[k])
+      )
+    }
   }
 
   /**
@@ -166,6 +209,28 @@ export default class DefaultConfig {
 
     pug: {
       pretty: DEBUG ? 1 : 0,
+    },
+  }
+
+  watch = {
+    listen: this.tasks.contents,
+  }
+
+  server = {
+    /** More options see: www.browsersync.io/docs/options */
+    bs: {
+      reloadOnRestart: true,
+      port: 3000,
+      server: {
+        baseDir: this.dest(),
+        index: 'index.html',
+      },
+      files: this.dest('**/*'),
+      open: true,
+      notify: true,
+
+      // "info", "debug", "warn", or "silent"
+      logLevel: 'debug',
     },
   }
 
