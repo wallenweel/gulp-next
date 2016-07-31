@@ -42,6 +42,7 @@ export default class DefaultConfig {
       'styles',
       'clean',
       'build',
+      'server',
     ],
   }
 
@@ -74,6 +75,32 @@ export default class DefaultConfig {
     if (!type) return r
 
     return r === type
+  }
+
+  /**
+   * Settings Options Updater
+   * @param  {String} optName Option's name
+   * @param  {Object} props   Need to update
+   * @return {Object}         Updated Option
+   */
+  update(optName, props) {
+    return this.updater(this[optName], props)
+  }
+
+  /**
+   * Object Properties Updater
+   * @param  {Object} obj    Want to be updated
+   * @param  {Object} props  Need to update
+   * @return {Object}        Updated Option
+   */
+  updater(option, props) {
+    Object.keys(props).forEach(k =>
+      !this.type(props[k], 'object') ?
+      (option[k] = props[k]) :
+      this.updater(option[k], props[k])
+    )
+
+    return option
   }
 
   /**
@@ -177,6 +204,24 @@ export default class DefaultConfig {
 
     pug: {
       pretty: DEBUG ? 1 : 0,
+    },
+  }
+
+  server = {
+    /** More options see: www.browsersync.io/docs/options */
+    bs: {
+      reloadOnRestart: true,
+      port: 3000,
+      server: {
+        baseDir: this.dest(),
+        index: 'index.html',
+      },
+      open: true,
+      notify: true,
+      quiet: false,
+
+      // "info", "debug", "warn", or "silent"
+      logLevel: 'debug',
     },
   }
 
