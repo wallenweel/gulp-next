@@ -1,6 +1,2 @@
-export default (gulp) => {
-  gulp.task('build', gulp.series(
-    'clean',
-    ['templates', 'styles', 'scripts']
-  ))
-}
+export default (gulp, c, cfg) =>
+  gulp.task('build', gulp.series('clean', cfg.tasks.contents))
