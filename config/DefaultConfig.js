@@ -32,6 +32,9 @@ export default class DefaultConfig {
     get styles() { return `${this.src}/styles` },
     get scripts() { return `${this.src}/scripts` },
     get templates() { return `${this.src}/templates` },
+    get images() { return `${this.src}/images` },
+    get fonts() { return `${this.src}/fonts` },
+    get extras() { return `${this.src}/extras` },
   }
 
   tasks = {
@@ -44,7 +47,8 @@ export default class DefaultConfig {
       'templates',
       'scripts',
       'styles',
-      // 'images',
+      'images',
+      'transfer',
     ],
     tools: [
       'test',
@@ -212,12 +216,48 @@ export default class DefaultConfig {
     },
   }
 
+  images = {
+    matching: type => this.srcMatching(type),
+    get src() { return this.matching('images')(this.include, this.exclude) },
+    dest: this.dest('images'),
+
+    include: ['**/*.{jpg,jpeg,png,gif,svg}'],
+    exclude: [],
+
+    /** More options see: github.com/sindresorhus/gulp-imagemin */
+
+  }
+
+  fonts = {
+    matching: type => this.srcMatching(type),
+    get src() { return this.matching('fonts')(this.include, this.exclude) },
+    dest: this.dest('fonts'),
+
+    include: ['**/*.{woff,woff2,ttf,eot,svg}'],
+    exclude: [],
+  }
+
+
+  extras = {
+    matching: type => this.srcMatching(type),
+    get src() { return this.matching('extras')(this.include, this.exclude) },
+    dest: this.dest(),
+
+    include: ['**/*'],
+    exclude: [],
+  }
+
   watch = {
     listen: this.tasks.contents,
   }
 
+  transfer = {
+    src: [...this.fonts.src, ...this.extras.src],
+    dest: this.dest,
+  }
+
   server = {
-    /** More options see: www.browsersync.io/docs/options */
+    /** More options see: browsersync.io/docs/options */
     bs: {
       reloadOnRestart: true,
       port: 3000,
