@@ -1,4 +1,4 @@
-import Config from './CustomConfig'
+import Config from './UserConfig'
 
 export const config = new Config()
 
