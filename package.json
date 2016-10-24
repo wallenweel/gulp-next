@@ -33,5 +33,8 @@
     "gulp-imagemin": "^3.0.2",
     "gulp-pug": "^3.0.3",
     "gulp-sass": "^2.3.2"
+  },
+  "dependencies": {
+    "react": "^15.3.1"
   }
 }
