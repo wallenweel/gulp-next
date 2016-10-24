@@ -1,3 +1,7 @@
-const hello = 'hello'
+const tee = 'hello'
 
-console.log(`${hello} babel`)
+((param) => {
+  const tee = 'world'
+  
+  return console.log(`${param} ${tee}!`)
+})(tee)

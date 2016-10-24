@@ -1,7 +1,8 @@
 import path from 'path'
 
 const DEBUG = !process.argv.includes('--release')
-// const VERBOSE = process.argv.includes('--verbose')
+const VERBOSE = process.argv.includes('--verbose')
+
 const AUTOPREFIXER_BROWSERS = [
   'Android 2.3',
   'Android >= 4',
@@ -13,17 +14,27 @@ const AUTOPREFIXER_BROWSERS = [
   'Safari >= 7.1',
 ]
 
+const GLOBALS = {
+  'process.env.NODE_ENV': DEBUG ? 'development' : 'production',
+  __DEV__: DEBUG,
+}
+
 export default class DefaultConfig {
 
-  relRoot = '..'
+  static relativeRoot = '..'
 
-  get absRoot() { return path.join(__dirname, this.relRoot) }
+  env = {
+    dev: DEBUG,
+    prod: !DEBUG,
+  }
 
-  dirs = {
+  globals = GLOBALS
+
+  origin = {
     root: '',
     tasks: 'tasks',
     src: 'src',
-    dest: 'dist',
+    dist: 'dist',
     build: 'build',
     dist: 'dist',
     test: 'test',
@@ -64,16 +75,15 @@ export default class DefaultConfig {
    * @return {Object}   Path get approach collection
    */
   get path() {
-    const paths = {}
+    const result = {}
+    const absoluteRoot = path.join(__dirname, DefaultConfig.relativeRoot)
 
-    Object.keys(this.dirs)
-      .forEach(k => (paths[k] = (...dir) => path.join(
-          this.absRoot,
-          this.dirs[k],
-          ...dir
-      )))
+    Object.keys(this.origin)
+      .forEach(k => (result[k] =
+        (...dir) => path.join(absoluteRoot, this.origin[k], ...dir)
+      ))
 
-    return paths
+    return result
   }
 
   /**
@@ -113,6 +123,15 @@ export default class DefaultConfig {
   }
 
   /**
+   * Update by chain
+   */
+  renew(type, props) {
+    this.mend(type)(props)
+
+    return this
+  }
+
+  /**
    * Generate Sources
    * @param  {String} type   Matching type e.g styles
    * @param  {String || Array} ...aim Should to be matched
@@ -140,7 +159,7 @@ export default class DefaultConfig {
    * @return {String}          Destination with dynamic type
    */
   dest(...child) {
-    return this.path[DEBUG ? 'dist' : 'build'](...child)
+    return this.path[DEBUG ? this.origin.dist : this.origin.build](...child)
   }
 
   /**
@@ -270,7 +289,7 @@ export default class DefaultConfig {
       notify: true,
 
       // "info", "debug", "warn", or "silent"
-      logLevel: 'debug',
+      logLevel: VERBOSE ? 'debug' : 'info',
     },
   }
 
