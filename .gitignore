@@ -1,4 +1,7 @@
-##Directories
+## Directories
 /node_modules
 /build
 /dist
+
+## Files
+npm-debug.log*
