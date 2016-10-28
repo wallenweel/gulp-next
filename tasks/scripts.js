@@ -4,7 +4,6 @@ import rename from 'gulp-rename'
 import $if from 'gulp-if'
 
 export default (gulp, c, cfg) => {
-  console.log(c.src)
   const scripts = async () =>
     await gulp.src(c.src, { base: c.cwd })
       .pipe(babel())
