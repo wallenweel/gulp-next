@@ -6,7 +6,7 @@ import $if from 'gulp-if'
 
 export default (gulp, c, cfg) => {
   const styles = async () =>
-    await gulp.src(c.src)
+    await gulp.src(c.src, { base: c.cwd })
       .pipe(sass(c.sass)).on('error', sass.logError)
 
       .pipe(autoprefixer(c.autoprefixer))

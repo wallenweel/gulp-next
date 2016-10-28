@@ -197,6 +197,8 @@ export default class DefaultConfig {
   // }
 
   styles = {
+    cwd: this.path.styles(),
+    
     matching: type => this.srcMatching(type),
     get src() { return this.matching('styles')(this.include, this.exclude) },
     dest: this.dest('css'),
@@ -214,6 +216,8 @@ export default class DefaultConfig {
   }
 
   scripts = {
+    cwd: this.path.scripts(),
+    
     matching: type => this.srcMatching(type),
     get src() { return this.matching('scripts')(this.include, this.exclude) },
     dest: this.dest('js'),
@@ -223,6 +227,8 @@ export default class DefaultConfig {
   }
 
   templates = {
+    cwd: this.path.templates(),
+    
     matching: type => this.srcMatching(type),
     get src() { return this.matching('templates')(this.include, this.exclude) },
     dest: this.dest(),
@@ -236,6 +242,8 @@ export default class DefaultConfig {
   }
 
   images = {
+    cwd: this.path.images(),
+    
     matching: type => this.srcMatching(type),
     get src() { return this.matching('images')(this.include, this.exclude) },
     dest: this.dest('images'),
@@ -248,6 +256,8 @@ export default class DefaultConfig {
   }
 
   fonts = {
+    cwd: this.path.fonts(),
+    
     matching: type => this.srcMatching(type),
     get src() { return this.matching('fonts')(this.include, this.exclude) },
     dest: this.dest('fonts'),
@@ -258,6 +268,8 @@ export default class DefaultConfig {
 
 
   extras = {
+    cwd: this.path.extras(),
+    
     matching: type => this.srcMatching(type),
     get src() { return this.matching('extras')(this.include, this.exclude) },
     dest: this.dest(),
