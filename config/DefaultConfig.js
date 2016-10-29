@@ -1,4 +1,5 @@
 import path from 'path'
+import fs from 'fs'
 
 const DEBUG = !process.argv.includes('--release')
 const VERBOSE = process.argv.includes('--verbose')
@@ -21,18 +22,14 @@ const GLOBALS = {
 
 export default class DefaultConfig {
 
-  constructor(dirs) {
-    // this.srcdirs = dirs
-  }
-
-  static relativeRoot = '..'
+  globals = GLOBALS
 
   env = {
     dev: DEBUG,
     prod: !DEBUG,
   }
 
-  globals = GLOBALS
+  static relativeRoot = '..'
 
   static rootdirs = {
     root: '',
@@ -43,43 +40,23 @@ export default class DefaultConfig {
     test: 'test',
   }
 
-  static srcdirs = {
-    styles: 'styles',
-    scripts: 'scripts',
-    templates: 'templates',
-    images: 'images',
-    fonts: 'fonts',
-    extras: 'extras',
-  }
-
-  static alias = {
+  alias = {
     ...DefaultConfig.rootdirs,
-    ...Object.keys(DefaultConfig.srcdirs).reduce((previous, current) => {
-      previous[current] = `${DefaultConfig.rootdirs.src}/${DefaultConfig.srcdirs[current]}`
-      return previous
-    }, {}),
   }
 
   tasks = {
-    get entry() {
-      const r = []
-      r.push(...this.contents, ...this.tools)
-      return r
+    handleName(files) {
+      return files.map(k => k.replace(/^\d{1,3}\.(.+)\.js$/, '$1'))
     },
-    contents: [
-      'templates',
-      'scripts',
-      'styles',
-      'images',
-      'transfer',
-    ],
-    tools: [
-      'test',
-      'clean',
-      'build',
-      'watch',
-      'server',
-    ],
+
+    files: fs.readdirSync(this.path.tasks()),
+    get filesName() { return this.handleName(this.files)},
+
+    get contents() { return this.files.filter(k => /^0\d{1,2}\..+\.js$/.test(k)) },
+    get contentsName() { return this.handleName(this.contents) },
+
+    get tools() { return this.files.filter(k => /^1\d{1,2}\..+\.js$/.test(k)) },
+    get toolsName() { return this.handleName(this.tools) },
   }
 
   /**
@@ -90,121 +67,53 @@ export default class DefaultConfig {
     const result = {}
     const absoluteRoot = path.join(__dirname, DefaultConfig.relativeRoot)
 
-    Object.keys(DefaultConfig.alias)
+    Object.keys(this.alias)
       .forEach(k => (result[k] =
-        (...dir) => path.join(absoluteRoot, DefaultConfig.alias[k], ...dir)
+        (...dir) => path.join(absoluteRoot, this.alias[k], ...dir)
       ))
 
     return result
   }
 
+  /**
+   * Current Work Directory (Relate to project root)
+   * @return {Object} path generator collection
+   */
   static get cwd() {
-    return Object.keys(DefaultConfig.alias).reduce((prev, curr) => {
-      prev[curr] = (...dir) => DefaultConfig.alias[curr] + (dir ? `/${dir.join('/')}` : '')
+    return Object.keys(DefaultConfig.rootdirs).reduce((prev, curr) => {
+      prev[curr] = (...dir) => DefaultConfig.rootdirs[curr] + (dir ? `/${dir.join('/')}` : '')
       return prev
     }, {})
   }
 
-  /**
-   * Type Checker
-   * @param  {Any}    stuff Any need to check
-   * @return {String}       Type name with lowercase
-   */
-  type(stuff, type = '') {
-    const r = Object.prototype.toString
-      .call(stuff).slice(8, -1).toLowerCase()
+  static src(cfg, match = []) {
+    const cwd = aim => DefaultConfig.cwd.src(cfg.cwd.src, aim)
 
-    if (!type) return r
-
-    return r === type
-  }
-
-  /**
-   * Mending Default Configuration
-   * @param  {String || Object} type Need to be mended
-   * @return {Function}      Param "props" is updating options
-   */
-  mend(type) {
-    const aim = this.type(type, 'object') ? type : this[type]
-
-    /**
-     * Updating options
-     * @param  {Object} props New options
-     * @return Assignment or Recursion
-     */
-    return (props) => {
-      Object.keys(props).forEach(k =>
-        !this.type(props[k], 'object') ?
-        (aim[k] = props[k]) :
-        this.mend(aim[k])(props[k])
-      )
-    }
-  }
-
-  /**
-   * Update by chain
-   */
-  renew(type, props) {
-    this.mend(type)(props)
-
-    return this
-  }
-
-  /**
-   * Generate Sources
-   * @param  {String} type   Matching type e.g styles
-   * @param  {String || Array} ...aim Should to be matched
-   * @return {Array}         Matched
-   */
-  static src(
-    type,
-    { include = [], exclude = [] },
-    match = []
-  ) {
-    const cwd = DefaultConfig.cwd[type]
-
-    include.forEach(k => match.push(cwd(k)))
-    exclude.forEach(k => match.push(`!${cwd(k)}`))
+    cfg.include.forEach(k => match.push(cwd(k)))
+    cfg.exclude.forEach(k => match.push(`!${cwd(k)}`))
 
     return match
   }
 
-  /**
-   * Destination
-   * @param  {String || Array} ...child Children
-   * @return {String}          Destination with dynamic type
-   */
-  dest(...child) {
-    return DefaultConfig.cwd[DEBUG ? DefaultConfig.alias.dist : DefaultConfig.alias.build](...child)
+  static dest(cfg) {
+    const aim = (cfg && typeof cfg === 'object') ? cfg.cwd.dest : cfg
+    const cwd = DEBUG ? 'dist' : 'build'
+
+    return DefaultConfig.cwd[DefaultConfig.rootdirs[cwd]](aim)
   }
 
-  /**
-   * Match Sources for Treatment
-   * @param  {String} type Sources type e.g "styles"
-   * @return {Function}      Including and excluding
-   */
-  srcMatching(type) {
-    const match = []
-
-    return (include, exclude) => {
-      const cwd = this.cwd[type]
-      const mge = o => this.type(o, 'array') ? cwd(...o) : cwd(o)
-      const gen = (inc, ex = '') => {
-        if (!inc.length && !ex) return () => false
-
-        if (this.type(inc, 'array')) match.push(...(inc.map(i => ex + mge(i))))
-        else match.push(ex + mge(inc))
-
-        return exc => exc ? gen(exc, '!')() : true
-      }
-
-      return gen(include)(exclude) ? match : console.error('Files Including is Must')
-    }
-  }
+  ///////////////////
+  // Task's Config //
+  ///////////////////
 
   styles = {
-    get src() { return DefaultConfig.src('styles', this) },
-    dest: this.dest('css'),
+    get src() { return DefaultConfig.src(this) },
+    get dest() { return DefaultConfig.dest(this) },
+
+    cwd: {
+      src: 'styles',
+      dest: 'css',
+    },
 
     include: ['*.scss'],
     exclude: [],
@@ -219,16 +128,26 @@ export default class DefaultConfig {
   }
 
   scripts = {
-    get src() { return DefaultConfig.src('scripts', this) },
-    dest: this.dest('js'),
+    get src() { return DefaultConfig.src(this) },
+    get dest() { return DefaultConfig.dest(this) },
+
+    cwd: {
+      src: 'scripts',
+      dest: 'js',
+    },
 
     include: ['*.{js,jsx}'],
     exclude: ['_*.{js,jsx}'],
   }
 
   templates = {
-    get src() { return DefaultConfig.src('templates', this) },
-    dest: this.dest(),
+    get src() { return DefaultConfig.src(this) },
+    get dest() { return DefaultConfig.dest(this) },
+
+    cwd: {
+      src: 'templates',
+      dest: '',
+    },
 
     include: ['*.{html,pug}'],
     exclude: ['_*.{html,pug}'],
@@ -239,8 +158,13 @@ export default class DefaultConfig {
   }
 
   images = {
-    get src() { return DefaultConfig.src('images', this) },
-    dest: this.dest('images'),
+    get src() { return DefaultConfig.src(this) },
+    get dest() { return DefaultConfig.dest(this) },
+
+    cwd: {
+      src: 'images',
+      dest: 'images',
+    },
 
     include: ['**/*.{jpg,jpeg,png,gif,svg}'],
     exclude: [],
@@ -250,8 +174,13 @@ export default class DefaultConfig {
   }
 
   fonts = {
-    get src() { return DefaultConfig.src('fonts', this) },
-    dest: this.dest('fonts'),
+    get src() { return DefaultConfig.src(this) },
+    get dest() { return DefaultConfig.dest(this) },
+
+    cwd: {
+      src: 'fonts',
+      dest: 'fonts',
+    },
 
     include: ['**/*.{woff,woff2,ttf,eot,svg}'],
     exclude: [],
@@ -259,20 +188,33 @@ export default class DefaultConfig {
 
 
   extras = {
-    get src() { return DefaultConfig.src('extras', this) },
-    dest: this.dest(),
+    get src() { return DefaultConfig.src(this) },
+    get dest() { return DefaultConfig.dest(this) },
+
+    cwd: {
+      src: 'extras',
+      dest: '',
+    },
 
     include: ['**/*'],
     exclude: [],
   }
 
   watch = {
-    listen: this.tasks.contents,
+    tasks: this.tasks.contentsName,
+  }
+
+  clean = {
+    dest: DefaultConfig.dest,
+  }
+
+  build = {
+    tasks: this.tasks.contentsName,
   }
 
   transfer = {
     src: [...this.fonts.src, ...this.extras.src],
-    dest: this.dest,
+    dest: DefaultConfig.dest(),
   }
 
   server = {
@@ -281,16 +223,72 @@ export default class DefaultConfig {
       reloadOnRestart: true,
       port: 3000,
       server: {
-        baseDir: this.dest(),
+        baseDir: DefaultConfig.dest(),
         index: 'index.html',
       },
-      files: this.dest('**/*'),
+      files: DefaultConfig.dest('**/*'),
       open: true,
       notify: true,
 
       // "info", "debug", "warn", or "silent"
       logLevel: VERBOSE ? 'debug' : 'info',
     },
+  }
+
+  //////////////////
+  // Some Assists //
+  //////////////////
+
+  /**
+   * Type Parser
+   * @param  {Any}    stuff Any need to check
+   * @return {String}       Type name with lowercase
+   */
+  type(stuff, type = '') {
+    const r = Object.prototype.toString
+      .call(stuff).slice(8, -1).toLowerCase()
+
+    if (!type) return r
+
+    return r === type
+  }
+
+  /**
+   * Mending Default Configuration
+   * Could use like 'styles' or 'styles.include'
+   * instead of this.styles.include
+
+   * @param  {String || Object} type Need to be mended
+   * @return {Function}      Param "props" is updating options
+   */
+  mend(type) {
+    const genAim = str => {
+      if (!/^[\$\_\w\d]+\.[\$\_\w\d]/.test(str)) return false
+
+      return str.split('.').reduce((p, c) => p[c], this)
+    }
+
+    const aim = this.type(type, 'object') ? type : genAim(type) || this[type]
+
+    /**
+     * Updating options
+     * @param  {Object} props New options
+     * @return Assignment or Recursion
+     */
+    return (props) => {
+      Object.keys(props).forEach(k =>
+        !this.type(props[k], 'object') ? (aim[k] = props[k]) : this.mend(aim[k])(props[k])
+      )
+    }
+  }
+
+  /**
+   * Update by chain
+   */
+  renew(type, props) {
+    this.mend(type)(props)
+
+    return this
   }
 
 }

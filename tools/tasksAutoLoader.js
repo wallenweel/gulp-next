@@ -1,15 +1,19 @@
+import fs from 'fs'
 import gulp from 'gulp'
-import { config } from '../config'
 import changed from 'gulp-changed'
+import $if from 'gulp-if'
+import rename from 'gulp-rename'
+
+import { config } from '../config'
 
 gulp.changed = changed
+gulp.if = $if
+gulp.rename = rename
 
 // Get gulp tasks's path synchronously
-// import fs from 'fs'
-// const tasks = fs.readdirSync(config.path.tasks())
+const tasks = fs.readdirSync(config.path.tasks())
 
-const tasks = config.tasks.entry
 export default tasks.forEach(async task =>
   await require(config.path.tasks(task))
-    .default(gulp, config[task], config)
+    .default(gulp, config[task.replace(/\d{1,}\.(.+)\.js/, '$1')], config)
 )

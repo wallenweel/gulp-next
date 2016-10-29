@@ -2,7 +2,6 @@ import fs from 'fs'
 import filter from 'gulp-filter'
 import pug from 'gulp-pug'
 import replace from 'gulp-replace'
-import $if from 'gulp-if'
 
 export default (gulp, c, cfg) => {
   /**
@@ -11,7 +10,7 @@ export default (gulp, c, cfg) => {
    * @return {Array}       a collection of these files's name, no postfix
    */
   const getFilesName = type => {
-    const files = fs.readdirSync(cfg.path[type]())
+    const files = fs.readdirSync(cfg.path.src(cfg.styles.cwd.src))
 
     return files
       .filter(val => /^[^\.\_].+\.\w+$/.test(val))
@@ -35,8 +34,8 @@ export default (gulp, c, cfg) => {
 
       .pipe(htmlFilter)
 
-      .pipe($if(cfg.env.prod, replace(stylesReg, '$1$2\.min$3')))
-      .pipe($if(cfg.env.prod, replace(scriptsReg, '$1$2\.min$3')))
+      .pipe(gulp.if(cfg.env.prod, replace(stylesReg, '$1$2\.min$3')))
+      .pipe(gulp.if(cfg.env.prod, replace(scriptsReg, '$1$2\.min$3')))
 
       .pipe(gulp.changed(c.dest))
       .pipe(gulp.dest(c.dest))
