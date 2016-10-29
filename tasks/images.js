@@ -3,7 +3,7 @@ import $if from 'gulp-if'
 
 export default (gulp, c, cfg) => {
   const images = async () =>
-    await gulp.src(c.src, { base: c.cwd })
+    await gulp.src(c.src)
       .pipe($if(cfg.env.prod, imagemin()))
 
       .pipe(gulp.changed(c.dest))

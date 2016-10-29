@@ -19,6 +19,15 @@ const GLOBALS = {
   __DEV__: DEBUG,
 }
 
+const srcdirs = {
+  styles: 'styles',
+  scripts: 'scripts',
+  templates: 'templates',
+  images: 'images',
+  fonts: 'fonts',
+  extras: 'extras',
+}
+
 export default class DefaultConfig {
 
   static relativeRoot = '..'
@@ -30,22 +39,30 @@ export default class DefaultConfig {
 
   globals = GLOBALS
 
-  origin = {
+  static rootdirs = {
     root: '',
     tasks: 'tasks',
     src: 'src',
-    dist: 'dist',
     build: 'build',
     dist: 'dist',
     test: 'test',
+  }
 
-    // Children
-    get styles() { return `${this.src}/styles` },
-    get scripts() { return `${this.src}/scripts` },
-    get templates() { return `${this.src}/templates` },
-    get images() { return `${this.src}/images` },
-    get fonts() { return `${this.src}/fonts` },
-    get extras() { return `${this.src}/extras` },
+  static srcdirs = {
+    styles: 'styles',
+    scripts: 'scripts',
+    templates: 'templates',
+    images: 'images',
+    fonts: 'fonts',
+    extras: 'extras',
+  }
+
+  static alias = {
+    ...DefaultConfig.rootdirs,
+    ...Object.keys(DefaultConfig.srcdirs).reduce((previous, current) => {
+      previous[current] = `${DefaultConfig.rootdirs.src}/${DefaultConfig.srcdirs[current]}`
+      return previous
+    }, {}),
   }
 
   tasks = {
@@ -78,12 +95,19 @@ export default class DefaultConfig {
     const result = {}
     const absoluteRoot = path.join(__dirname, DefaultConfig.relativeRoot)
 
-    Object.keys(this.origin)
+    Object.keys(DefaultConfig.alias)
       .forEach(k => (result[k] =
-        (...dir) => path.join(absoluteRoot, this.origin[k], ...dir)
+        (...dir) => path.join(absoluteRoot, DefaultConfig.alias[k], ...dir)
       ))
 
     return result
+  }
+
+  static get cwd() {
+    return Object.keys(DefaultConfig.alias).reduce((prev, curr) => {
+      prev[curr] = (...dir) => DefaultConfig.alias[curr] + (dir ? `/${dir.join('/')}` : '')
+      return prev
+    }, {})
   }
 
   /**
@@ -137,20 +161,17 @@ export default class DefaultConfig {
    * @param  {String || Array} ...aim Should to be matched
    * @return {Array}         Matched
    */
-  src(type, ...aim) {
-    const i = this.path[type]
-    const match = []
+  static src(
+    type,
+    { include = [], exclude = [] },
+    match = []
+  ) {
+    const cwd = DefaultConfig.cwd[type]
 
-    const genPush = (arr, o, ex = '') =>
-      this.type(o, 'string') ? arr.push(ex + i(o)) : arr.push(ex + i(...o))
+    include.forEach(k => match.push(cwd(k)))
+    exclude.forEach(k => match.push(`!${cwd(k)}`))
 
-    aim.forEach(k => genPush(match, k))
-
-    return (...exclude) => {
-      exclude.forEach(k => genPush(match, k, '!'))
-
-      return match
-    }
+    return match
   }
 
   /**
@@ -159,7 +180,7 @@ export default class DefaultConfig {
    * @return {String}          Destination with dynamic type
    */
   dest(...child) {
-    return this.path[DEBUG ? this.origin.dist : this.origin.build](...child)
+    return DefaultConfig.cwd[DEBUG ? DefaultConfig.alias.dist : DefaultConfig.alias.build](...child)
   }
 
   /**
@@ -171,7 +192,7 @@ export default class DefaultConfig {
     const match = []
 
     return (include, exclude) => {
-      const cwd = this.path[type]
+      const cwd = this.cwd[type]
       const mge = o => this.type(o, 'array') ? cwd(...o) : cwd(o)
       const gen = (inc, ex = '') => {
         if (!inc.length && !ex) return () => false
@@ -186,21 +207,8 @@ export default class DefaultConfig {
     }
   }
 
-  // demo = {
-  //   /** .1 */
-  //   src: this.src('type', 'include')('exclude'),
-  //
-  //   /** .2 */
-  //   include: [] || '', exclude: [] || '',
-  //   matching: type => this.srcMatching(type),
-  //   get src() { return this.matching('styles')(this.include, this.exclude) },
-  // }
-
   styles = {
-    cwd: this.path.styles(),
-    
-    matching: type => this.srcMatching(type),
-    get src() { return this.matching('styles')(this.include, this.exclude) },
+    get src() { return DefaultConfig.src('styles', this) },
     dest: this.dest('css'),
 
     include: ['*.scss'],
@@ -216,10 +224,7 @@ export default class DefaultConfig {
   }
 
   scripts = {
-    cwd: this.path.scripts(),
-    
-    matching: type => this.srcMatching(type),
-    get src() { return this.matching('scripts')(this.include, this.exclude) },
+    get src() { return DefaultConfig.src('scripts', this) },
     dest: this.dest('js'),
 
     include: ['*.{js,jsx}'],
@@ -227,10 +232,7 @@ export default class DefaultConfig {
   }
 
   templates = {
-    cwd: this.path.templates(),
-    
-    matching: type => this.srcMatching(type),
-    get src() { return this.matching('templates')(this.include, this.exclude) },
+    get src() { return DefaultConfig.src('templates', this) },
     dest: this.dest(),
 
     include: ['*.{html,pug}'],
@@ -242,10 +244,7 @@ export default class DefaultConfig {
   }
 
   images = {
-    cwd: this.path.images(),
-    
-    matching: type => this.srcMatching(type),
-    get src() { return this.matching('images')(this.include, this.exclude) },
+    get src() { return DefaultConfig.src('images', this) },
     dest: this.dest('images'),
 
     include: ['**/*.{jpg,jpeg,png,gif,svg}'],
@@ -256,10 +255,7 @@ export default class DefaultConfig {
   }
 
   fonts = {
-    cwd: this.path.fonts(),
-    
-    matching: type => this.srcMatching(type),
-    get src() { return this.matching('fonts')(this.include, this.exclude) },
+    get src() { return DefaultConfig.src('fonts', this) },
     dest: this.dest('fonts'),
 
     include: ['**/*.{woff,woff2,ttf,eot,svg}'],
@@ -268,10 +264,7 @@ export default class DefaultConfig {
 
 
   extras = {
-    cwd: this.path.extras(),
-    
-    matching: type => this.srcMatching(type),
-    get src() { return this.matching('extras')(this.include, this.exclude) },
+    get src() { return DefaultConfig.src('extras', this) },
     dest: this.dest(),
 
     include: ['**/*'],

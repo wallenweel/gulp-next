@@ -28,7 +28,7 @@ export default (gulp, c, cfg) => {
     const pugFilter = filter('**/*.pug', { restore: true })
     const htmlFilter = filter('**/*.html')
 
-    return await gulp.src(c.src, { base: c.cwd })
+    return await gulp.src(c.src)
       .pipe(pugFilter)
       .pipe(pug(c.pug))
       .pipe(pugFilter.restore)

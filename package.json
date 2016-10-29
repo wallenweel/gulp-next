@@ -41,8 +41,5 @@
     "gulp-replace": "^0.5.4",
     "gulp-sass": "^2.3.2",
     "gulp-uglify": "^2.0.0"
-  },
-  "dependencies": {
-    "react": "^15.3.1"
   }
 }
