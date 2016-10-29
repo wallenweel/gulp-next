@@ -19,16 +19,11 @@ const GLOBALS = {
   __DEV__: DEBUG,
 }
 
-const srcdirs = {
-  styles: 'styles',
-  scripts: 'scripts',
-  templates: 'templates',
-  images: 'images',
-  fonts: 'fonts',
-  extras: 'extras',
-}
-
 export default class DefaultConfig {
+
+  constructor(dirs) {
+    // this.srcdirs = dirs
+  }
 
   static relativeRoot = '..'
 

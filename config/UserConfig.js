@@ -4,6 +4,7 @@ export default class UserConfig extends DefaultConfig {
 
   constructor() {
     super()
+    super()
 
     // this.srcdirs.styles = 'styles0'
     // console.log(this);
