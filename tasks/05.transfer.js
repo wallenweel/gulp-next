@@ -1,10 +1,10 @@
 export default (gulp, c, cfg) => {
   const transfer = {
-    fonts: async () => await gulp.src(cfg.fonts.src, { base: cfg.fonts.cwd })
+    fonts: async () => await gulp.src(cfg.fonts.src)
       .pipe(gulp.changed(cfg.fonts.dest))
       .pipe(gulp.dest(cfg.fonts.dest)),
 
-    extras: async () => await gulp.src(cfg.extras.src, { base: cfg.extras.cwd })
+    extras: async () => await gulp.src(cfg.extras.src)
       .pipe(gulp.changed(cfg.extras.dest))
       .pipe(gulp.dest(cfg.extras.dest)),
   }

@@ -1,6 +1,6 @@
 export default (gulp, c, cfg) => {
   const watch = async () =>
-    await c.listen.forEach(k =>
+    await c.tasks.forEach(k =>
       gulp.watch(cfg[k].src, gulp.series(k))
     )
 

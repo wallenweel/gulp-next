@@ -5,10 +5,17 @@ export default class UserConfig extends DefaultConfig {
   constructor() {
     super()
 
-    this.renew(this.server.bs, {
+    this.renew('server.bs', {
       port: 3030,
       ui: false,
       open: false,
+    })
+    .renew('styles', {
+      include: ['**/*.scss'],
+      exclude: ['**/_*.scss', '**/~*.scss', 'lib/*.scss'],
+    })
+    .renew('images.cwd', {
+      dest: 'img',
     })
   }
 

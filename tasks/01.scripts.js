@@ -1,15 +1,13 @@
 import babel from 'gulp-babel'
 import uglify from 'gulp-uglify'
-import rename from 'gulp-rename'
-import $if from 'gulp-if'
 
 export default (gulp, c, cfg) => {
   const scripts = async () =>
-    await gulp.src(c.src, { base: c.cwd })
+    await gulp.src(c.src)
       .pipe(babel())
 
-      .pipe($if(cfg.env.prod, uglify()))
-      .pipe($if(cfg.env.prod, rename({
+      .pipe(gulp.if(cfg.env.prod, uglify()))
+      .pipe(gulp.if(cfg.env.prod, gulp.rename({
         suffix: '.min',
       })))
 
