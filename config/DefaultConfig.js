@@ -49,7 +49,7 @@ export default class DefaultConfig {
       return files.map(k => k.replace(/^\d{1,3}\.(.+)\.js$/, '$1'))
     },
 
-    files: fs.readdirSync(this.path.tasks()),
+    files: this.getValidFiles(this.path.tasks()),
     get filesName() { return this.handleName(this.files)},
 
     get contents() { return this.files.filter(k => /^0\d{1,2}\..+\.js$/.test(k)) },
@@ -57,6 +57,20 @@ export default class DefaultConfig {
 
     get tools() { return this.files.filter(k => /^1\d{1,2}\..+\.js$/.test(k)) },
     get toolsName() { return this.handleName(this.tools) },
+  }
+
+  /**
+   * Getting Vaild Files
+   *
+   * @param  {String} dirpath need to read directory
+   * @param  {String} parent  suffix of each item with '/'
+   * @return {Array}          a collection of these files's name
+   */
+  getValidFiles(dirpath, parent) {
+    const files = fs.readdirSync(dirpath)
+
+    return files.filter(f => /^(?![\.\_\!\~]).+\..+$/.test(f))
+      .map(k => parent ? `${parent}/${k}` : k)
   }
 
   /**
@@ -118,6 +132,13 @@ export default class DefaultConfig {
     include: ['*.scss'],
     exclude: [],
 
+    min: '.min',
+
+    entries: () => this.getValidFiles(
+      this.path.src(this.styles.cwd.src),
+      DefaultConfig.cwd.src(this.styles.cwd.src)
+    ),
+
     sass: {
       outputStyle: 'expanded',
     },
@@ -138,6 +159,18 @@ export default class DefaultConfig {
 
     include: ['*.{js,jsx}'],
     exclude: ['_*.{js,jsx}'],
+
+    min: '.min',
+
+    entries: () => this.getValidFiles(
+      this.path.src(this.scripts.cwd.src),
+      DefaultConfig.cwd.src(this.scripts.cwd.src)
+    ),
+
+    browserify: {
+      debug: DEBUG,
+      transform: ['babelify'],
+    },
   }
 
   templates = {
@@ -167,10 +200,33 @@ export default class DefaultConfig {
     },
 
     include: ['**/*.{jpg,jpeg,png,gif,svg}'],
+    exclude: ['sprites/**/*.*'],
+
+    /** More options see: https://github.com/sindresorhus/gulp-imagemin */
+    imagemin: {},
+
+  }
+
+  sprites = {
+    get src() { return DefaultConfig.src(this) },
+    get dest() { return DefaultConfig.cwd.src() },
+
+    cwd: {
+      src: 'images/sprites',
+      dest: '',
+    },
+
+    include: ['*.{png,jpg,jpeg}'],
     exclude: [],
 
-    /** More options see: github.com/sindresorhus/gulp-imagemin */
-
+    /** More options see: https://github.com/twolfson/gulp.spritesmith#spritesmithparams */
+    params: {
+      imgName: 'images/sprites.png',
+      cssName: 'styles/_sprites.scss',
+      imgPath: '/img/sprites.png',
+      padding: 10,
+      algorithm:'binary-tree',
+    },
   }
 
   fonts = {

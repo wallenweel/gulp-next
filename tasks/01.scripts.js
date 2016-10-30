@@ -1,14 +1,17 @@
-import babel from 'gulp-babel'
 import uglify from 'gulp-uglify'
+import browserify from 'gulp-browserify'
+import plumber from 'gulp-plumber'
 
 export default (gulp, c, cfg) => {
   const scripts = async () =>
     await gulp.src(c.src)
-      .pipe(babel())
+      .pipe(plumber())
+
+      .pipe(browserify(c.browserify))
 
       .pipe(gulp.if(cfg.env.prod, uglify()))
       .pipe(gulp.if(cfg.env.prod, gulp.rename({
-        suffix: '.min',
+        suffix: c.min,
       })))
 
       .pipe(gulp.changed(c.dest))
