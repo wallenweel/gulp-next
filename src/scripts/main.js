@@ -1,7 +1,9 @@
+import { common } from './libs/common.js'
+
 const tee = 'hello'
 
-((param) => {
+;((param) => {
   const tee = 'world'
-  
-  return console.log(`${param} ${tee}!`)
+
+  return console.log(`${param} ${tee}!`, common)
 })(tee)
