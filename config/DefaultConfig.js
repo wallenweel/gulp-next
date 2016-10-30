@@ -200,10 +200,33 @@ export default class DefaultConfig {
     },
 
     include: ['**/*.{jpg,jpeg,png,gif,svg}'],
+    exclude: ['sprites/**/*.*'],
+
+    /** More options see: https://github.com/sindresorhus/gulp-imagemin */
+    imagemin: {},
+
+  }
+
+  sprites = {
+    get src() { return DefaultConfig.src(this) },
+    get dest() { return DefaultConfig.cwd.src() },
+
+    cwd: {
+      src: 'images/sprites',
+      dest: '',
+    },
+
+    include: ['*.{png,jpg,jpeg}'],
     exclude: [],
 
-    /** More options see: github.com/sindresorhus/gulp-imagemin */
-
+    /** More options see: https://github.com/twolfson/gulp.spritesmith#spritesmithparams */
+    params: {
+      imgName: 'images/sprites.png',
+      cssName: 'styles/_sprites.scss',
+      imgPath: '/img/sprites.png',
+      padding: 10,
+      algorithm:'binary-tree',
+    },
   }
 
   fonts = {
