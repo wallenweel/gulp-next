@@ -11,7 +11,7 @@ export default (gulp, c, cfg) => {
 
       .pipe(gulp.if(cfg.env.prod, cssnano()))
       .pipe(gulp.if(cfg.env.prod, gulp.rename({
-        suffix: '.min',
+        suffix: c.min,
       })))
 
       .pipe(gulp.changed(c.dest))

@@ -10,16 +10,15 @@ export default (gulp, c, cfg) => {
    * @return {Array}       a collection of these files's name, no postfix
    */
   const getFilesName = type => {
-    const files = fs.readdirSync(cfg.path.src(cfg.styles.cwd.src))
+    const files = cfg.getValidFiles(cfg.path.src(cfg[type].cwd.src))
 
     return files
-      .filter(val => /^[^\.\_].+\.\w+$/.test(val))
-      .map(val => val.replace(/\.\w+$/, ''))
-      .map(val => val.replace(/([\.\_\-\@\!\~\+\=]+?)/, '\\$1'))
+      .map(k => k.replace(/\.\w+$/, ''))
   }
 
   const stylesFilenames = getFilesName('styles').join('|')
   const stylesReg = new RegExp(`(\\<link.+href\\=[\\'\\"].*)(${stylesFilenames})(\\.css[\\'\\"].*\\>)`, 'g')
+
   const scriptsFilenames = getFilesName('scripts').join('|')
   const scriptsReg = new RegExp(`(\\<script.+src\\=[\\'\\"].*)(${scriptsFilenames})(\\.js[\\'\\"].*\\>\\<\\/script\\>)`, 'g')
 
@@ -34,8 +33,8 @@ export default (gulp, c, cfg) => {
 
       .pipe(htmlFilter)
 
-      .pipe(gulp.if(cfg.env.prod, replace(stylesReg, '$1$2\.min$3')))
-      .pipe(gulp.if(cfg.env.prod, replace(scriptsReg, '$1$2\.min$3')))
+      .pipe(gulp.if(cfg.env.prod, replace(stylesReg, '$1$2' + cfg.styles.min + '$3')))
+      .pipe(gulp.if(cfg.env.prod, replace(scriptsReg, '$1$2' + cfg.scripts.min + '$3')))
 
       .pipe(gulp.changed(c.dest))
       .pipe(gulp.dest(c.dest))
