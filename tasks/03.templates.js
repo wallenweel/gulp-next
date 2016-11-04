@@ -1,6 +1,7 @@
 import fs from 'fs'
 import filter from 'gulp-filter'
 import pug from 'gulp-pug'
+import plumber from 'gulp-plumber'
 import replace from 'gulp-replace'
 
 export default (gulp, c, cfg) => {
@@ -27,6 +28,7 @@ export default (gulp, c, cfg) => {
     const htmlFilter = filter('**/*.html')
 
     return await gulp.src(c.src)
+      .pipe(plumber())
       .pipe(pugFilter)
       .pipe(pug(c.pug))
       .pipe(pugFilter.restore)
