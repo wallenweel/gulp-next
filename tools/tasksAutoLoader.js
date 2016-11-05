@@ -7,7 +7,7 @@ import sourcemaps from 'gulp-sourcemaps'
 import { config } from '../config'
 
 gulp.changed = changed
-gulp.if = $if
+gulp.$if = $if
 gulp.rename = rename
 gulp.sourcemaps = sourcemaps
 

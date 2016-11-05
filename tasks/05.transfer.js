@@ -1,13 +1,17 @@
-export default (gulp, c, cfg) => {
-  const fonts = async () => await gulp.src(cfg.fonts.src)
-    .pipe(gulp.changed(cfg.fonts.dest))
-    .pipe(gulp.dest(cfg.fonts.dest))
+export default (
+  { task, src, dest, series, changed },
+  c,
+  { fonts, extras }
+) => {
+  task('fonts', async () => await src(fonts.src)
+    .pipe(changed(fonts.dest))
+    .pipe(dest(fonts.dest))
+  )
 
-  const extras = async () => await gulp.src(cfg.extras.src)
-    .pipe(gulp.changed(cfg.extras.dest))
-    .pipe(gulp.dest(cfg.extras.dest))
+  task('extras', async () => await src(extras.src)
+    .pipe(changed(extras.dest))
+    .pipe(dest(extras.dest))
+  )
 
-  gulp.task(fonts)
-  gulp.task(extras)
-  gulp.task('transfer', gulp.series('fonts', 'extras'))
+  task('transfer', series('fonts', 'extras'))
 }

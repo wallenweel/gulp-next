@@ -1,21 +1,23 @@
 import fs from 'fs'
-import filter from 'gulp-filter'
 import pug from 'gulp-pug'
-import plumber from 'gulp-plumber'
+import filter from 'gulp-filter'
 import replace from 'gulp-replace'
+import plumber from 'gulp-plumber'
 
-export default (gulp, c, cfg) => {
+export default (
+  { task, src, dest, changed, $if },
+  c,
+  cfg
+) => {
+  const { getValidFiles, path, env, styles, scripts } = cfg
+
   /**
    * Getting Files'name of A Path
    * @param  {String} type the name in config's origin property
    * @return {Array}       a collection of these files's name, no postfix
    */
-  const getFilesName = type => {
-    const files = cfg.getValidFiles(cfg.path.src(cfg[type].cwd.src))
-
-    return files
-      .map(k => k.replace(/\.\w+$/, ''))
-  }
+  const getFilesName = type =>
+    getValidFiles(path.src(cfg[type].cwd.src)).map(k => k.replace(/\.\w+$/, ''))
 
   const stylesFilenames = getFilesName('styles').join('|')
   const stylesReg = new RegExp(`(\\<link.+href\\=[\\'\\"].*)(${stylesFilenames})(\\.css[\\'\\"].*\\>)`, 'g')
@@ -23,24 +25,23 @@ export default (gulp, c, cfg) => {
   const scriptsFilenames = getFilesName('scripts').join('|')
   const scriptsReg = new RegExp(`(\\<script.+src\\=[\\'\\"].*)(${scriptsFilenames})(\\.js[\\'\\"].*\\>\\<\\/script\\>)`, 'g')
 
-  const templates = async () => {
-    const pugFilter = filter('**/*.pug', { restore: true })
-    const htmlFilter = filter('**/*.html')
+  const pugFilter = filter('**/*.pug', { restore: true })
+  const htmlFilter = filter('**/*.html')
 
-    return await gulp.src(c.src)
-      .pipe(plumber())
-      .pipe(pugFilter)
-      .pipe(pug(c.pug))
-      .pipe(pugFilter.restore)
+  task('templates', async () => await src(c.src)
+    .pipe(plumber())
 
-      .pipe(htmlFilter)
+    .pipe(pugFilter)
+    .pipe(pug(c.pug))
+    .pipe(pugFilter.restore)
 
-      .pipe(gulp.if(cfg.env.prod, replace(stylesReg, '$1$2' + cfg.styles.min + '$3')))
-      .pipe(gulp.if(cfg.env.prod, replace(scriptsReg, '$1$2' + cfg.scripts.min + '$3')))
+    .pipe(htmlFilter)
 
-      .pipe(gulp.changed(c.dest))
-      .pipe(gulp.dest(c.dest))
-  }
+    .pipe($if(env.prod, replace(stylesReg, '$1$2' + styles.min + '$3')))
+    .pipe($if(env.prod, replace(scriptsReg, '$1$2' + scripts.min + '$3')))
 
-  gulp.task(templates)
+    .pipe(changed(c.dest))
+    .pipe(dest(c.dest))
+  )
+
 }

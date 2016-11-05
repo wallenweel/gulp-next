@@ -1,8 +1,12 @@
-export default (gulp, c, cfg) => {
-  const watch = async () =>
+export default (
+  { task, watch, series },
+  c,
+  cfg
+) => {
+  const watchChanged = async () =>
     await c.tasks.forEach(k =>
-      gulp.watch(cfg[k].src, gulp.series(k))
+      watch(cfg[k].src, series(k))
     )
 
-  gulp.task('watch', gulp.series('build', watch))
+  task('watch', series('build', watchChanged))
 }

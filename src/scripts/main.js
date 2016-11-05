@@ -1,10 +1,8 @@
-import { common } from './libs/common.js'
-// import jquery from 'jquery'
+import { common as co } from './libs/common.js'
 
 const tee = 'hello'
-// const $body = jquery('body')
 ;((param) => {
   const tee = 'world'
 
-  return console.log(`${param} ${tee}!`, common)
+  return console.log(`${param} ${tee}!`, co)
 })(tee)

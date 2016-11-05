@@ -1,8 +1,10 @@
 import browserSync from 'browser-sync'
 
-export default (gulp, c) => {
-  const server = async () =>
-    await browserSync(c.bs)
+export default (
+  { task, series },
+  c
+) => {
+  const bsServer = async () => await browserSync(c.bs)
 
-  gulp.task('server', gulp.series(server, 'watch'))
+  task('server', series('watch', bsServer))
 }
